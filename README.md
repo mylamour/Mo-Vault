@@ -1,6 +1,3 @@
-# Mo-softhsm
-Easy to build a secret service with Docker, Softhsm2 and pkcs11-proxy
-
 # Intro
 
 This is a basic usage for `SoftHsm2` and `pkcs11-proxy`. now we are building a env with docker file. it mainly included four part.
