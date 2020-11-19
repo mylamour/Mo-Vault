@@ -1,0 +1,24 @@
+version: "3"
+services:
+
+  softhsm2-proxy-base:
+    build: base/
+    image: softhsm2-proxy:base
+
+  softhsm2-proxy:
+    depends_on: 
+      - softhsm2-proxy-base
+    build: 
+      context: softhsm2-proxy/
+      #  This part was help to pass vairables from docker-compose file to DockerFile
+      args:
+        MY_PGP_PUBLIC_KEY_NAME: ${MY_PGP_PUBLIC_KEY_NAME}
+        MY_PGP_RECIPIENT: ${MY_PGP_RECIPIENT}
+        MY_TOKENLABLE: ${MY_TOKENLABLE}
+        MY_PKCS11_PROXY_PORT: ${MY_PKCS11_PROXY_PORT}
+    image: mo-softhsm2-proxy
+    expose: 
+      - ${MY_PKCS11_PROXY_PORT}
+    volumes:
+      # - ${PWD}/secrets/PIN_PRO.testing.public.asc:/tmp/public.asc
+      - ${PWD}/softhsm2-proxy:/root
