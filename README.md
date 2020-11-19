@@ -9,16 +9,16 @@ This is a basic usage for `SoftHsm2` and `pkcs11-proxy`. now we are building a e
 
 # How to use
 
-1. Genreate PGP key with `gpg --full-generate-key` and export the public with `gpg --export xxxx > PIN_PRO.testing.public.asc` to this folder.  
+1. Genreate PGP key with `gpg --full-generate-key` and export the public with `gpg --export xxxx > PIN_PRO.testing.public.asc` to `softhsm2-proxy` folder.  
 
 Notices:
 > You can change the exported PGP Public key file name, also you should change it in Dockerfile: `PIN_PRO_PGP_PUBLICKEY`
 
 2. Generate a randome string for `TLS-PSK`,  You can use the following command to do that `echo -e $(openssl rand -hex 32):$(openssl rand -hex 32) > TLS-PSK`
 
-3. Build the image with `docker build . -t yourimagename`
+3. Build the image with `docker-compose --env-file ./config/.env.dev build`, You can change the configuration in `./config/.env.dev`
 
-4. Run the container `docker run --rm -it -v $PWD/tokens/user01:/var/tokens -p 5657:5657 yourimagename`
+4. Run the container `docker run --rm -v $PWD/tokens/user02:/var/tokens -p 5657:5657 mo-softhsm2-proxy:latest`
 
 Notices:
 >  Please keep use absolute path when we try to mount the `volum`
