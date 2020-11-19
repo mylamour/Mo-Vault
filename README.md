@@ -67,8 +67,8 @@ Notices:
     `gpg -e -u 'SoftHSMv2_ADMIN' --trust-model always -r PGP_RECIPIENT PIN_SECRET`
 3. if softhsm2 was build manuly, you should change the lib path.
 4. slot token label was able to changed with `docker run -e TOKENLABLE=""` also you can modified the `Dockerfile`
-5. mount voulme should be without `- ${PWD}/secrets/:/secrets` is not working, `- ${PWD}/secrets:/secrets` is working
-
+5. mount voulme,  `- ${PWD}/secrets/:/secrets` is not working, `- ${PWD}/secrets:/secrets` is working
+6. docker rm none tags image `docker rmi $(docker images --filter "dangling=true" -q --no-trunc)`
 
 # Resources
 * [Pass variable from docker-compose file to docker file](https://github.com/docker/compose/issues/5600)
