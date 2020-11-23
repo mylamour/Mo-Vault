@@ -19,6 +19,11 @@ PKCS11_PROXY_TLS_PSK_FILE=os.environ.get("PKCS11_PROXY_TLS_PSK_FILE")
 class HSM(object):
 
     def __init__(self, slot, pin, token=None, version=None):
+        """ 
+        slot(uuid user) -> RSA key -> RSA key version
+           - slot was slot label 
+           - token was key label
+        """
             
         if not PKCS11_MODULE:
             raise Exception("Didn't find the PKCS11_MODULE")
@@ -54,7 +59,7 @@ class HSM(object):
         
 
         # try:
-        self.session=self.slot.open(user_pin=pin)
+        self.session=self.slot.open(user_pin=pin, rw=True)
 
         if self.token:
             self.get_token()
@@ -68,20 +73,28 @@ class HSM(object):
         #     logging.info("TOKEN was not exists")
 
 
-    def init_key(self,alg,token):
+    def gen_aes(self, token, version):
+        self.token = token
+
+        return self.session.generate_key(KeyType.AES, 128, template={
+            Attribute.SENSITIVE: False,
+            Attribute.EXTRACTABLE: False,
+            Attribute.LABEL: self.token,
+            Attribute.ID: self.key_version
+        })
+
+    def gen_rsa(self, token, version):
+        pass
+
+    def init_key(self,alg,token=None):
 
         if alg.lower() == "aes":
+            pass
+            # aes = self.gen_aes(token=token)
+            
 
-            self.token=token
 
-            self.key = self.session.generate_key(KeyType.AES, 128, template={
-                Attribute.SENSITIVE: False,
-                Attribute.EXTRACTABLE: False,
-                Attribute.LABEL: self.token,
-                Attribute.ID: self.key_version
-                })
-
-        if alg.lower() == "des":
+        if alg.lower() == "rsa":
             pass
 
         if alg.lower() == "":
@@ -145,23 +158,27 @@ if __name__ == "__main__":
 
     data = b'You are handsome'
 
-    mtoken = str(uuid.uuid1()).replace('-','')
+    # mtoken = str(uuid.uuid1()).replace('-','')
+
+    mtoken = "ead374d22b2d11eb8b1345972e9777af"
 
     hsm = HSM(slot="OpenDNSSEC",pin="1234")
-    hsm.init_key('aes', mtoken)
+    # hsm.init_key('aes', mtoken)
+
+    hsm.gen_rsa
     print(hsm.key)
     
-    ciphertext = hsm.encrypt(data)
-    iv = hsm.aes_key_iv
+    # ciphertext = hsm.encrypt(data)
+    # iv = hsm.aes_key_iv
 
 
-    print(ciphertext)
+    # print(ciphertext)
 
-    hsm.logout()
+    # hsm.logout()
 
     
-    hsm2 = HSM(slot="OpenDNSSEC",pin="1234", token=mtoken)
-    plaintext = hsm2.decrypt(ciphertext,iv)
+    # hsm2 = HSM(slot="OpenDNSSEC",pin="1234", token=mtoken)
+    # plaintext = hsm2.decrypt(ciphertext,iv)
 
 
-    print(plaintext)
+    # print(plaintext)
