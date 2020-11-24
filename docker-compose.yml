@@ -12,8 +12,8 @@ services:
       context: softhsm2-proxy/
       #  This part was help to pass vairables from docker-compose file to DockerFile
       args:
-        MY_PGP_PUBLIC_KEY_NAME: ${MY_PGP_PUBLIC_KEY_NAME}
-        MY_PGP_RECIPIENT: ${MY_PGP_RECIPIENT}
+        HSM_KEYSHARES: ${HSM_KEYSHARES}
+        HSM_KEY_THESHOLD: ${HSM_KEY_THESHOLD}
         MY_TOKENLABLE: ${MY_TOKENLABLE}
         MY_PKCS11_PROXY_PORT: ${MY_PKCS11_PROXY_PORT}
     image: mo-softhsm2-proxy
