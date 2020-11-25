@@ -1,0 +1,1 @@
+Replace with your own public key and make sure it was configured in `.env.dev` file

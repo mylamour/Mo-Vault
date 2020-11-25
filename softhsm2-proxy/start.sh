@@ -48,25 +48,26 @@ echo ${pinfiles[$COUNTER]}
 # get each file and encrypt it with pgp public key
 for recipient_id in $KEYIDS
 do
-    COUNTER=$[$COUNTER +1]
     echo "[Processing $COUNTER] Encryption Recipient Id: $recipient_id"
 
     echo "Processing......" ${pinfiles[$COUNTER]} ${sopinfiles[$COUNTER]}
     gpg -e -u "SoftHSMv2_ADMIN" --trust-model always -r $recipient_id ${pinfiles[$COUNTER]}
-    gpg -e -u "SoftHSMv2_ADMIN" --trust-model always -r $recipient_id ${sopinfiles[$COUNTER]}
+    find . -type f -name "pinshares_*.gpg" -print 2>/dev/null -exec mv {} $recipient_id.pin.gpg \;
 
-    # mv to /var/token/folder
+    gpg -e -u "SoftHSMv2_ADMIN" --trust-model always -r $recipient_id ${sopinfiles[$COUNTER]}
+    find . -type f -name "sopinshares_*.gpg" -print 2>/dev/null -exec mv {} $recipient_id.sopin.gpg \;
     
-    mv ${pinfiles[$COUNTER]}.gpg /var/token/$recipient_id.pin.gpg
-    mv ${sopinfiles[$COUNTER]}.gpg /var/token/$recipient_id.sopin.gpg
+    COUNTER=$[$COUNTER +1]
 
 done
 
 
 softhsm2-util --init-token --slot 0 --label ${TOKENLABLE} --pin ${PINSECRET} --so-pin ${SOPINSECRET}
 
-unset $PINSECRET
-unset $SOPINSECRET
+unset PINSECRET
+unset SOPINSECRET
+
+find . -type f -name "*pin.gpg" -print 2>/dev/null -exec mv {} /var/tokens \;
 
 rm -rf ${PIN_SECRET} ${SO_PIN_SECRET} ${PINSHARES} ${SOPINSHARES}
 rm -rf pinshares_* sopinshares_*

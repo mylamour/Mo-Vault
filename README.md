@@ -17,10 +17,7 @@ This is a basic usage for `SoftHsm2` and `pkcs11-proxy`. now we are building a e
 
 # How to use
 
-1. Genreate PGP key with `gpg --full-generate-key` and export the public with `gpg --export xxxx > PIN_PRO.testing.public.asc` to `softhsm2-proxy` folder.  
-
-Notices:
-> You can change the exported PGP Public key file name, also you should change it in Dockerfile: `PIN_PRO_PGP_PUBLICKEY`
+1. Genreate PGP key with `gpg --full-generate-key` and export the public with `gpg --export xxxx > PIN_PRO.testing.public.asc` to `softhsm2-proxy/publickeys` folder.   make sure the numbers of gpg keys should equal with config file `.env.dev`. field: `HSM_KEYSHARES`
 
 2. Generate a randome string for `TLS-PSK`,  You can use the following command to do that `echo -e $(openssl rand -hex 32):$(openssl rand -hex 32) > TLS-PSK`
 
@@ -36,6 +33,17 @@ Now, you will able to use `softhsm2` with `pkcs11-proxy`, and `pkcs11-proxy` was
 # How to testing
 
 After we start the container with `docker run --rm -it -v $PWD/tokens/user01:/var/tokens mylamour/more-softhsm2-proxy`, you will see the `gpg` file was placed in `$PWD/tokens/user01`, you will get the slot token after working with `gpg -d pinsecret.gpg`, in this repo, the testing key's password was `test`. it's weakness, **you must setting a strong password for prod env.**
+
+Get token from gpg files 
+```bash
+find . -type f -name "*.pin.gpg" -exec gpg -d {} \; > /tmp/tokens | secret-share-combine 
+```
+
+![image](https://user-images.githubusercontent.com/12653147/100181707-da680180-2f15-11eb-8978-fd768375360f.png)
+
+
+you can find more details about `secret-share-combine` and `secret-share-split` in `softhsm2-proxy/sss/readme.md`
+This is just for test purpose. you should get the shares from each `Key Custodian` , and make sure it was only stored in memory.
 
 as you can see in this picture, i was login into container and use below commands to have a testing:
 ```bash
@@ -66,7 +74,6 @@ Notices:
 
 
 
-
 # Notices
 
 1. exec the pkcs11-proxy in background
@@ -77,6 +84,7 @@ Notices:
 4. slot token label was able to changed with `docker run -e TOKENLABLE=""` also you can modified the `Dockerfile`
 5. mount voulme,  `- ${PWD}/secrets/:/secrets` is not working, `- ${PWD}/secrets:/secrets` is working
 6. docker rm none tags image `docker rmi $(docker images --filter "dangling=true" -q --no-trunc)`
+7. list user's public keys `gpg --list-public-keys --batch --with-colons | grep pub | cut -d: -f5`
 
 # Resources
 * [Pass variable from docker-compose file to docker file](https://github.com/docker/compose/issues/5600)
