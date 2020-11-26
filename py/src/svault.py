@@ -1,184 +1,71 @@
-import os
-import logging
-import uuid
-import pkcs11
-from pkcs11 import KeyType,Attribute
-from pkcs11 import Mechanism
-from pkcs11.exceptions import PinIncorrect, NoSuchKey, NoSuchToken, MultipleObjectsReturned
+from utils import string_to_bytes, bytes_to_hex
 
-ALGS= ["aes","rsa"]
+from pkcs11 import KeyType, ObjectClass, Mechanism
+from pkcs11.util.rsa import encode_rsa_public_key
 
-PKCS11_PROXY_MODULE=os.environ.get("PKCS11_PROXY_MODULE")
-PKCS11_MODULE=os.environ.get("PKCS11_MODULE")
-PKCS11_PROXY_SOCKET=os.environ.get("PKCS11_PROXY_SOCKET")
-PKCS11_PROXY_TLS_PSK_FILE=os.environ.get("PKCS11_PROXY_TLS_PSK_FILE")
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_v1_5 as Cipher_PKCS1_v1_5
 
-# /usr/local/lib/softhsm/libsofthsm2.so
-# /usr/local/lib/libpkcs11-proxy.so
+class Svault:
 
-class HSM(object):
-
-    def __init__(self, slot, pin, token=None, version=None):
-        """ 
-        slot(uuid user) -> RSA key -> RSA key version
-           - slot was slot label 
-           - token was key label
-        """
-            
-        if not PKCS11_MODULE:
-            raise Exception("Didn't find the PKCS11_MODULE")
-        
-        if not PKCS11_PROXY_MODULE:
-            raise Exception("Didn't find PKCS11_PROXY_MODULE")
-
-        if not PKCS11_PROXY_SOCKET:
-            raise Exception("Didn't find the PKCS11_PROXY_SOCKET")
-
-        if not PKCS11_PROXY_TLS_PSK_FILE:
-            raise Exception("Didn't find the PKCS11_PROXY_TLS_PSK_FILE")
-
-        self.session = None
-        self.token = None
-        self.pin = pin
-        self.token = token
-        self.key = None
-        self.lib = pkcs11.lib(PKCS11_PROXY_MODULE)
-        # self.lib = pkcs11.lib("/usr/local/lib/softhsm/libsofthsm2.so")
-
-        self.slot = self.lib.get_token(token_label=slot)
-
-        self.symmetric = []
-        self.asymmetric = []
-
-        # key_version should be byte type
-        self.key_version = '0'.encode()
-        self.aes_key_iv = None
-
-        if version:
-            self.key_version = str(version).encode()
-        
-
-        # try:
-        self.session=self.slot.open(user_pin=pin, rw=True)
-
-        if self.token:
-            self.get_token()
-            print(self.key)
-            self.key_version = str(int.from_bytes(self.key.id,"big") + 1).encode()
-
-
-        # except PinIncorrect:
-        #     logging.info("PIN was error")
-        # except NoSuchToken:
-        #     logging.info("TOKEN was not exists")
-
-
-    def gen_aes(self, token, version):
-        self.token = token
-
-        return self.session.generate_key(KeyType.AES, 128, template={
-            Attribute.SENSITIVE: False,
-            Attribute.EXTRACTABLE: False,
-            Attribute.LABEL: self.token,
-            Attribute.ID: self.key_version
-        })
-
-    def gen_rsa(self, token, version):
+    def __init__(self, secret):
         pass
 
-    def init_key(self,alg,token=None):
+    def import_secret(self):
+        pass
 
-        if alg.lower() == "aes":
-            pass
-            # aes = self.gen_aes(token=token)
-            
+    def export_secret(self):
+        pass
 
 
-        if alg.lower() == "rsa":
-            pass
 
-        if alg.lower() == "":
-            pass
+    def encrypt(self, secret, plaintext) :
+        # # Extract public key
+        # key = session.get_key(label="Mo", key_type=KeyType.RSA, object_class=ObjectClass.PUBLIC_KEY)
 
-        return "We don't support this algorithms yet"
-
-    def get_token(self):
-
-        try:
-            self.key = self.session.get_key(label=self.token, id=self.key_version)
-        except NoSuchKey:
-            pass
-        except MultipleObjectsReturned:
+        if secret == "aes":
             pass
 
-    def logout(self):
-        self.session.close()
+        if secret == "rsa":
+            key = RSA.importKey(encode_rsa_public_key(secret))
+            # Encryption on the local machine
+            cipher = Cipher_PKCS1_v1_5.new(key)
+            crypttext = cipher.encrypt(string_to_bytes(plaintext))
 
-    def encrypt(self,plaintext,iv=None):
-        #type: symmetric / asymmetry
-        # alg
+            return bytes_to_hex(crypttext)
 
-        ciphertext = None
-        
-        if self.key.key_type.name == "AES" :
-
-            if not iv:
-                self.aes_key_iv = self.session.generate_random(128)
-                ciphertext = self.key.encrypt(plaintext, mechanism_param=self.aes_key_iv)
-               
-            else:
-                ciphertext = self.key.encrypt(plaintext,  mechanism_param=iv)
-
-        if self.key.key_type.name == "DES3" :
+    def decrypt(self, secret, ciphertext):
+        if secret == "aes":
             pass
 
-        return ciphertext
+        if secret == "rsa":
+            pass
+            # priv = session.get_key(label="Mo", key_type=KeyType.RSA, object_class=ObjectClass.PRIVATE_KEY)
+            # plaintext = priv.decrypt(crypttext, mechanism=Mechanism.RSA_PKCS)
 
-
-    def decrypt(self, ciphertext, iv=None):
-        if self.key.key_type.name == "AES":
-            if iv:
-                return self.key.decrypt(ciphertext, mechanism_param=iv)
-            # return self.key.encrypt(ciphertext,mechanism=Mechanism.AES_OFB,mechanism_param=self.aes_key_iv)
-
-    
     def sign(self):
         pass
 
     def verify(self):
         pass
 
-    def plaintext(self):
+    def wrap(self):
         pass
 
+    def unwrap(self):
+        pass
+
+    def digest(self):
+        pass
+
+    def hash(self):
+        pass
+
+    def x509(self):
+        pass
+
+
+
+
 if __name__ == "__main__":
-
-
-    # data = b'人间忽晚，山河已秋'.encode('utf-8')
-
-    data = b'You are handsome'
-
-    # mtoken = str(uuid.uuid1()).replace('-','')
-
-    mtoken = "ead374d22b2d11eb8b1345972e9777af"
-
-    hsm = HSM(slot="OpenDNSSEC",pin="1234")
-    # hsm.init_key('aes', mtoken)
-
-    hsm.gen_rsa
-    print(hsm.key)
-    
-    # ciphertext = hsm.encrypt(data)
-    # iv = hsm.aes_key_iv
-
-
-    # print(ciphertext)
-
-    # hsm.logout()
-
-    
-    # hsm2 = HSM(slot="OpenDNSSEC",pin="1234", token=mtoken)
-    # plaintext = hsm2.decrypt(ciphertext,iv)
-
-
-    # print(plaintext)
+    pass
