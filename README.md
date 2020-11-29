@@ -8,11 +8,14 @@
 
 # Intro
 
-This is a basic usage for `SoftHsm2` and `pkcs11-proxy`. now we are building a env with docker file. it mainly included four part.
+This is a basic usage for `SoftHsm2` and `pkcs11-proxy`. now we are building a env with docker file. it mainly included five part. 
 1. Basic Env, also `SoftHsm2` and `pkcs11-proxy` 
 2. Upload PGP Public Key when you try to building this image, it was designed for protected the `pin` vaule and `so-pin` vaule
 3. Initilized the `slot` with random `32 bit hex` vaule and encrypt the vaule with `PGP Public Key`
 4. Enable `pkcs11-proxy`
+5. Web Service which provide ability to encrypt/decrypt payload as a services
+
+![image](https://user-images.githubusercontent.com/12653147/100545213-b9950880-3295-11eb-905f-f0d466cc9f2d.png)
 
 
 # How to use
