@@ -1,5 +1,6 @@
-from utils import string_to_bytes, bytes_to_hex
+from uuid import uuid4
 
+from .utils import string_to_bytes, bytes_to_string, bytes_to_hex, hex_to_bytes
 from pkcs11 import KeyType, ObjectClass, Mechanism
 from pkcs11.util.rsa import encode_rsa_public_key
 
@@ -9,45 +10,43 @@ from Crypto.Cipher import PKCS1_v1_5 as Cipher_PKCS1_v1_5
 class Svault:
 
     def __init__(self, secret):
-        pass
+        
+        self.secret = secret
+        self.key_type = self.secret.key_type.name
 
-    def import_secret(self):
-        pass
+    def encrypt(self, plaintext,iv=None):
+        ciphertext = None
+        if self.key_type == "AES" :
+            if not iv:
+                iv = aes_key_iv =uuid4().hex
+            ciphertext = self.secret.encrypt(plaintext, mechanism_param=hex_to_bytes(aes_key_iv))
+                
+            return iv, ciphertext.hex()
+        
+        if self.key_type == "RSA" :
+            ciphertext = self.secret.encrypt(plaintext)
+            return None, ciphertext.hex()
 
-    def export_secret(self):
-        pass
+    def decrypt(self,ciphertext,iv=None):
+        if self.key_type == "AES":
+            plaintext = self.secret.decrypt(ciphertext, mechanism_param=hex_to_bytes(iv)) 
+            return plaintext
 
 
+        if self.key_type == "RSA":
+            plaintext = self.secret.decrypt(ciphertext, mechanism=Mechanism.RSA_PKCS)
+            return plaintext
 
-    def encrypt(self, secret, plaintext) :
-        # # Extract public key
-        # key = session.get_key(label="Mo", key_type=KeyType.RSA, object_class=ObjectClass.PUBLIC_KEY)
+    def sign(self,payload):
+        if self.key_type == "RSA":
+            signautre = self.secret.sign(payload)
+            return signautre
 
-        if secret == "aes":
-            pass
 
-        if secret == "rsa":
-            key = RSA.importKey(encode_rsa_public_key(secret))
-            # Encryption on the local machine
-            cipher = Cipher_PKCS1_v1_5.new(key)
-            crypttext = cipher.encrypt(string_to_bytes(plaintext))
-
-            return bytes_to_hex(crypttext)
-
-    def decrypt(self, secret, ciphertext):
-        if secret == "aes":
-            pass
-
-        if secret == "rsa":
-            pass
-            # priv = session.get_key(label="Mo", key_type=KeyType.RSA, object_class=ObjectClass.PRIVATE_KEY)
-            # plaintext = priv.decrypt(crypttext, mechanism=Mechanism.RSA_PKCS)
-
-    def sign(self):
-        pass
-
-    def verify(self):
-        pass
+    def verify(self,payload,signautre):
+        if self.key_type == "RSA":
+            sameornot = self.secret.verify(string_to_bytes(payload), signautre)
+            return sameornot
 
     def wrap(self):
         pass

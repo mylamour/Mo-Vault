@@ -73,6 +73,10 @@ Notices:
 ![image](https://user-images.githubusercontent.com/12653147/99552255-c1cc8880-29f7-11eb-8bb3-d44c88926be8.png)
 
 
+python code testing
+
+![image](https://user-images.githubusercontent.com/12653147/100539438-6c9f3b00-3271-11eb-9153-ee2a92fbf3b4.png)
+
 
 # Notices
 
