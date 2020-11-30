@@ -81,12 +81,16 @@ class HSM(object):
         except NoSuchKey:
             logging.error("No Such Key")
 
-    def get_rsa(self, secret_path, secret_version):
+    def get_rsa(self, secret_path, secret_version,keypairs=None):
+        
+        pub = self.session.get_key(label=secret_path, id=int_to_bytes(secret_version), key_type=KeyType.RSA, object_class=ObjectClass.PUBLIC_KEY)
+        priv = self.session.get_key(label=secret_path, id=int_to_bytes(secret_version), key_type=KeyType.RSA, object_class=ObjectClass.PRIVATE_KEY)
 
-        pub = self.session.get_key(label=secret_path, id=int_to_bytes(
-            secret_version), key_type=KeyType.RSA, object_class=ObjectClass.PUBLIC_KEY)
-        priv = self.session.get_key(label=secret_path, id=int_to_bytes(
-            secret_version), key_type=KeyType.RSA, object_class=ObjectClass.PRIVATE_KEY)
+        if keypairs == "public":
+            return pub
+        if keypairs == "private":
+            return priv
+            
         return pub, priv
 
     def gen_aes(self, secret_path, secret_version, secret_len=128, extract=False):

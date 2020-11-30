@@ -32,10 +32,13 @@ def hello():
     # return all_indexs
 
 @app.route("/gen/key/<key_type>", methods=['GET', 'POST'])
-def genkey(key_type,secret_path,secret_version):
+def genkey(key_type):
+    """
+        curl --header "Content-Type: application/json"  --request POST --data '{"secret_path":"random_test/zhao", "secret_version":"1"}' http://127.0.0.1:8080/gen/key/aes
+    """
     if key_type in ALLOWED_KEY_TYPS:
         if request.method == 'GET':
-            return jsonify({"Error":"we only support rsa & aes"})
+            return jsonify({"Info":"we only support rsa & aes, please use post method"})
 
         if request.method == 'POST':
             secret_path = request.json['secret_path']
@@ -57,12 +60,69 @@ def genkey(key_type,secret_path,secret_version):
 
 
 @app.route("/key/encrypt/<key_type>",methods=['GET', 'POST'])
-def encryptit():
-    pass
+def encryptit(key_type):
+    if key_type in ALLOWED_KEY_TYPS:
+        if request.method == 'GET':
+            return jsonify({"Info":"we only support rsa & aes, please use post method"})
+
+        if request.method == 'POST':
+            secret_path = request.json['secret_path']
+            secret_version = int(request.json['secret_version'])
+            plaintext = request.json['plaintext']
+        
+            if key_type == "rsa":
+                pub, _ = hsm.get_rsa(secret_path,secret_version)
+                pubV = Svault(pub)
+                _, ciphertext = pubV.encrypt(plaintext)
+                if pub:
+                    return jsonify({"ciphertext" : "{}".format(ciphertext)})
+                else:
+                    return jsonify({"Info": "Key was not exsits"})
+
+            if key_type == "aes":
+                aes = hsm.get_aes(secret_path, secret_version)
+                aesV = Svault(aes)
+                if aes:
+                    iv, ciphertext = aesV.encrypt(plaintext)
+                    return jsonify({"iv": iv, "ciphertext": "{}".format(ciphertext)})
+                else:
+                    return jsonify({"Info": "Key not was exsits"})
+
+    return jsonify({"Error":"key type was not supported \n"})
+
 
 @app.route("/key/decrypt/<key_type>",methods=['GET', 'POST'])
-def decryptit():
-    pass
+def decryptit(key_type):
+    if key_type in ALLOWED_KEY_TYPS:
+        if request.method == 'GET':
+            return jsonify({"Info":"we only support rsa & aes, please use post method"})
+
+        if request.method == 'POST':
+            secret_path = request.json['secret_path']
+            secret_version = int(request.json['secret_version'])
+            ciphertext = request.json['ciphertext']
+        
+            if key_type == "rsa":
+                _, priv = hsm.get_rsa(secret_path,secret_version)
+                privV = Svault(priv)
+
+                if priv:
+                    plaintext = privV.decrypt(ciphertext)
+                    return jsonify({"plaintext" : "{}".format(plaintext)})
+                else:
+                    return jsonify({"Info": "Key was not exsits"})
+
+            if key_type == "aes":
+                oiv = request.json['iv']
+                aes = hsm.get_aes(secret_path, secret_version)
+                aesV = Svault(aes)
+                if aes:
+                    plaintext = aesV.decrypt(ciphertext,iv=oiv)
+                    return jsonify({"plaintext" : "{}".format(plaintext)})
+                else:
+                    return jsonify({"Info": "Key not was exsits"})
+    return jsonify({"Error":"key type was not supported \n"})
+
 
 @app.route("/key/sign")
 def signit():

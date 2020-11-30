@@ -15,7 +15,6 @@ class Svault:
         self.key_type = self.secret.key_type.name
 
     def encrypt(self, plaintext,iv=None):
-        ciphertext = None
         if self.key_type == "AES" :
             if not iv:
                 iv = aes_key_iv =uuid4().hex
@@ -25,11 +24,12 @@ class Svault:
         
         if self.key_type == "RSA" :
             ciphertext = self.secret.encrypt(plaintext)
+            print(ciphertext)
             return None, ciphertext.hex()
 
     def decrypt(self,ciphertext,iv=None):
         if self.key_type == "AES":
-            plaintext = self.secret.decrypt(ciphertext, mechanism_param=hex_to_bytes(iv)) 
+            plaintext = self.secret.decrypt(ciphertext, mechanism_param=hex_to_bytes(iv))
             return plaintext
 
 
