@@ -103,7 +103,7 @@ def decryptit(key_type):
             ciphertext = request.json['ciphertext']
         
             if key_type == "rsa":
-                _, priv = hsm.get_rsa(secret_path,secret_version)
+                priv = hsm.get_rsa(secret_path,secret_version,keypairs="private")
                 privV = Svault(priv)
 
                 if priv:

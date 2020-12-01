@@ -19,23 +19,21 @@ class Svault:
             if not iv:
                 iv = aes_key_iv =uuid4().hex
             ciphertext = self.secret.encrypt(plaintext, mechanism_param=hex_to_bytes(aes_key_iv))
-                
             return iv, ciphertext.hex()
         
         if self.key_type == "RSA" :
             ciphertext = self.secret.encrypt(plaintext)
-            print(ciphertext)
             return None, ciphertext.hex()
 
     def decrypt(self,ciphertext,iv=None):
         if self.key_type == "AES":
-            plaintext = self.secret.decrypt(ciphertext, mechanism_param=hex_to_bytes(iv))
-            return plaintext
+            plaintext = self.secret.decrypt(hex_to_bytes(ciphertext), mechanism_param=hex_to_bytes(iv))
+            return bytes_to_string(plaintext)
 
 
         if self.key_type == "RSA":
-            plaintext = self.secret.decrypt(ciphertext, mechanism=Mechanism.RSA_PKCS)
-            return plaintext
+            plaintext = self.secret.decrypt(hex_to_bytes(ciphertext))
+            return bytes_to_string(plaintext)
 
     def sign(self,payload):
         if self.key_type == "RSA":

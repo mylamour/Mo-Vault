@@ -12,9 +12,14 @@ ian@star01:~/Desktop/Mo-softhsm$ curl --header "Content-Type: application/json" 
 {
   "Info": "Key was exsits"
 }
-ian@star01:~/Desktop/Mo-softhsm$ curl --header "Content-Type: application/json"  --request POST --data '{"secret_path":"random_test/rsa", "secret_version":"1","plaintext":"you are handsome man" }' http://127.0.0.1:8080/key/encrypt/rsa
+ian@star01:~/Desktop/Mo-softhsm$ curl --header "Content-Type: application/json"  --request POST --data '{"secret_path":"random_test/rsa", "secret_version":"2","plaintext":"you are handsome man" }' http://127.0.0.1:8080/key/encrypt/rsa
 {
-  "ciphertext": "(None, '55f71d38a83537994cac2f6b0cc3c3756897f44799599059b1edb6a0d8e41234f59ad11c203d1a0645fe59fb01c7bfca89c8f0241c02c91031d7be66e2a016b7c195b600dd78b356af2e1c949700ffe8550cb7766efd7c7cffc941e201a3fa8131a33f42b9aba1f0b32272cbee202ac52ae65d403987aa62a8ea5fcef97626f49fdf8acbdce80d891ec4a2413d63306945be575e4b7f138ac551c73a70c1bee045092123fbeed006491403dff231a9a2a5ed01d2aadae86cee0d796dab51ba7baca94912a33d3a648ab8624763c2abfb1cbdc702e6ae80a26107ffb18fe8d4d11979711ad93e0be1a431a8d679c7a4878c27827e27fbffa170a2a8bb3bdcbd84')"
+  "ciphertext": "a92b38d38140bd2dcb6651ee0a7001af7e48506fdecf2b30ad5767bd229456be1a5b60d8095ac3702dfd34ee4bbd46c35449ad006a48bd185e4090cfd683da26cb0e18b4c35e0a0bd0e8f11659fed5c95a120b6b9ea970b480b59cbfcd2a1f1805a652a6e31df9377456253e106656086026c54b0c81460d2990726a612a8511d755db4919bae1a3fe78e2850073f53e81b9b2cb12f16cfbc890dce2e47a3e47f9e0da4c03f337f94d5dad12b5e70cc89458730c57fece59f737a2e6fdc6713571bdcbf0178746fa595aba520f7e9050be8b20bc7ae606d96bbeeedd4039d86f0899e0ac5aa60040c5a527e23a788fcf3cda70c70e6b7043e8beec4d85c297b5"
+}
+
+ian@star01:~/Desktop/Mo-softhsm$ curl --header "Content-Type: application/json"  --request POST --data '{"secret_path":"random_test/rsa","secret_version":"2", "ciphertext":"593834fa8daa9a0ae9f87f40554318ed652540e4c73ad4e07bce7c4815daee468e79cb365bcff4284762bd330eedcd0ba2b4f107c30c9f391a95a594072b2bc11e8706cff3d690f1e1cfcd146750ab4d6239991ac2aa1f87367ed903385d3a21bb8fd5de333f84efa5468e45a503bf4a3e813b7704486141a0755d11b1afdb97eebdb5ac35a6301fc773a4c9445287dadeadac416a3cdb6cfd9de7262e6e64ff201a27ef7cf4675171de42e8f4dedc75a276a26515a490ad1709a2f7dae0a5767c18c6f887db0748dbb67dcab2aeb206fe3946edca083f6198c7c1794a48e1c00fb9ad9dd6d98b4cb97569205936fce4978f581d16a1d116a4875aadbaeecafc"}' http://127.0.0.1:8080/key/decrypt/rsa
+{
+  "plaintext": "you are handsome man"
 }
 
 
