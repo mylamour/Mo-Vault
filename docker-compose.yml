@@ -19,6 +19,7 @@ services:
     image: mo-softhsm2-proxy
     expose: 
       - ${MY_PKCS11_PROXY_PORT}
+      - 8443
     volumes:
       # - ${PWD}/secrets/PIN_PRO.testing.public.asc:/tmp/public.asc
       - ${PWD}/softhsm2-proxy:/root

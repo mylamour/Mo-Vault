@@ -1,12 +1,12 @@
+import os
 import logging
 from logging import Formatter, FileHandler
-
 from flask import Flask, request, jsonify
 from waitress import serve
-
 from src import HSM, Svault, int_to_bytes, hex_to_bytes
 from pkcs11 import KeyType, ObjectClass, Mechanism
 from pkcs11.exceptions import PinIncorrect, NoSuchKey, NoSuchToken, MultipleObjectsReturned
+
 
 ALLOWED_KEY_TYPS= ["rsa", "aes"]
 
@@ -18,8 +18,11 @@ ALLOWED_KEY_TYPS= ["rsa", "aes"]
     - iv
 """
 
+SLOT = os.environ.get("TOKENLABLE")
+PIN = os.environ.get("PINSECRET")
+
 app = Flask(__name__)
-hsm = HSM(slot="OpenDNSSEC", pin="1234") # it should be managed as session
+hsm = HSM(slot=SLOT, pin=PIN) # it should be managed as session
 
 @app.route("/")
 def hello():
@@ -156,7 +159,6 @@ if not app.debug:
     app.logger.info('errors')
 
 if __name__ == "__main__":
-    app.debug = True
-    app.run(host="0.0.0.0",port = int(8080))
-
-    # serve(app, host="0.0.0.0", port=8080)
+    # app.debug = True
+    # app.run(host="0.0.0.0",port = int(8080))
+    serve(app, host="0.0.0.0", port=8443)

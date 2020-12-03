@@ -4,9 +4,6 @@ from .utils import string_to_bytes, bytes_to_string, bytes_to_hex, hex_to_bytes
 from pkcs11 import KeyType, ObjectClass, Mechanism
 from pkcs11.util.rsa import encode_rsa_public_key
 
-from Crypto.PublicKey import RSA
-from Crypto.Cipher import PKCS1_v1_5 as Cipher_PKCS1_v1_5
-
 class Svault:
 
     def __init__(self, secret):

@@ -21,7 +21,9 @@ RUN apt-get update && apt-get install -y softhsm2 opensc opensc-pkcs11 \
     cmake \
     libssl-dev \
     libseccomp-dev \
-    tzdata
+    tzdata \
+    python3 \
+    python3-pip
 
 RUN git clone https://github.com/SUNET/pkcs11-proxy && \
     cd pkcs11-proxy && \

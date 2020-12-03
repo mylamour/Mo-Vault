@@ -64,12 +64,17 @@ done
 
 softhsm2-util --init-token --slot 0 --label ${TOKENLABLE} --pin ${PINSECRET} --so-pin ${SOPINSECRET}
 
-unset PINSECRET
-unset SOPINSECRET
+# unset PINSECRET
+# unset SOPINSECRET
 
 find . -type f -name "*pin.gpg" -print 2>/dev/null -exec mv {} /var/tokens \;
 
 rm -rf ${PIN_SECRET} ${SO_PIN_SECRET} ${PINSHARES} ${SOPINSHARES}
 rm -rf pinshares_* sopinshares_*
 
-/usr/local/bin/pkcs11-daemon /usr/lib/softhsm/libsofthsm2.so
+nohup /usr/local/bin/pkcs11-daemon /usr/lib/softhsm/libsofthsm2.so  > /dev/null &
+
+# export FLASK_APP=/root/web/app.py && cd /root/web && flask run
+# export FLASK_APP=/root/app.py && flask run
+
+cd /root/ && python3 /root/app.py

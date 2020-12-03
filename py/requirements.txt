@@ -1,4 +1,0 @@
-waitress==1.4.4
-Flask==1.1.2
-python-pkcs11==0.7.0
-pycryptodome==3.9.9

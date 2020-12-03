@@ -30,10 +30,12 @@ ENV SSS_SPLIT="/usr/local/bin/secret-share-split"
 # # ENV PKCS11_DAEMON_SOCKET="tcp://0.0.0.0:5657"
 ENV PKCS11_DAEMON_SOCKET="tls://0.0.0.0:${PKCS11_PROXY_PORT}"
 ENV PKCS11_PROXY_TLS_PSK_FILE="/root/TLS-PSK"
-
 # EXPOSE ${PKCS11_PROXY_PORT}
 
 #  It's better to working with mount for token directorys
+
+COPY web/ /root/
+RUN pip3 install -r /root/requirements.txt -i https://pypi.doubanio.com/simple
 
 COPY publickeys/* ${PIN_PRO_PGP_PUBLICKEYS_DIR}
 COPY softhsm2.conf /root/softhsm2.conf
