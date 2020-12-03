@@ -8,7 +8,7 @@ from .utils import bytes_to_hex, hex_to_bytes, int_to_bytes, bytes_to_int, tree
 from subprocess import Popen, PIPE
 # from shamirss import PlaintextToHexSecretSharer
 from pkcs11 import Mechanism, KeyType, Attribute, ObjectClass
-from pkcs11.exceptions import PinIncorrect, NoSuchKey, NoSuchToken, MultipleObjectsReturned
+from pkcs11.exceptions import PinIncorrect, NoSuchKey, NoSuchToken, MultipleObjectsReturned, UserAlreadyLoggedIn
 
 ALGS = ["aes", "rsa"]
 
@@ -66,6 +66,8 @@ class HSM(object):
             logging.info("PIN was error")
         except NoSuchToken:
             logging.info("slot was not exists")
+        except UserAlreadyLoggedIn:
+            logging.info("slot was already login, let me close it and login again")
 
     # def init_root(self):
     #     if self.session.get_key(label="_ROOT_LMK_", id=self.key_version):

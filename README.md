@@ -92,6 +92,7 @@ python code testing
 5. mount voulme,  `- ${PWD}/secrets/:/secrets` is not working, `- ${PWD}/secrets:/secrets` is working
 6. docker rm none tags image `docker rmi $(docker images --filter "dangling=true" -q --no-trunc)`
 7. list user's public keys `gpg --list-public-keys --batch --with-colons | grep pub | cut -d: -f5`
+8. once you created a new slot, you need to reload `pkcs-proxy`, or you will not get the new one.
 
 # Resources
 * [Pass variable from docker-compose file to docker file](https://github.com/docker/compose/issues/5600)
