@@ -53,8 +53,10 @@ $ curl --header "Content-Type: application/json"  --request POST --data '{"secre
 {
   "plaintext": "you are handsome man"
 }
+```
 
-# How to testing
+
+# Working with Cli
 
 After we start the container with `docker run --rm -it -v $PWD/tokens/user01:/var/tokens mylamour/more-softhsm2-proxy`, you will see the `gpg` file was placed in `$PWD/tokens/user01`, you will get the slot token after working with `gpg -d pinsecret.gpg`, in this repo, the testing key's password was `test`. it's weakness, **you must setting a strong password for prod env.**
 
