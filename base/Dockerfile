@@ -7,23 +7,22 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Change To USTC Mirror For China Users
 RUN sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
 
-# # Dependencies
-# RUN apt-get update && apt-get -y install git\
-#     autoconf automake pkg-config botan openssl llvm curl gcc sqlite3 \
-#     libcrypto++ libsqlite3-dev libp11-dev libbotan-2-dev libengine-pkcs11-openssl libtool libssl-dev zlib1g-dev
-
-# RUN git clone https://github.com/opendnssec/SoftHSMv2
-
-RUN apt-get update && apt-get install -y softhsm2 opensc opensc-pkcs11 \
+RUN apt-get update && apt-get install -y opensc opensc-pkcs11 \
     ca-certificates \
     git-core \
     build-essential \
-    cmake \
-    libssl-dev \
-    libseccomp-dev \
     tzdata \
     python3 \
-    python3-pip
+    python3-pip \
+    autoconf automake pkg-config botan openssl llvm curl gcc cmake sqlite3 \
+    libtool libcrypto++ libseccomp-dev libssl-dev libsqlite3-dev libp11-dev libbotan-2-dev libengine-pkcs11-openssl  zlib1g-dev
+
+# complied manually with botan as crypto backend ,and enable sqlite support
+RUN git clone https://github.com/opendnssec/SoftHSMv2 && \
+    cd SoftHSMv2 && \
+    ./autogen.sh && \
+    ./configure --with-objectstore-backend-db --with-crypto-backend=botan --with-objectstore-backend-db && \
+    make -j8 && make install 
 
 RUN git clone https://github.com/SUNET/pkcs11-proxy && \
     cd pkcs11-proxy && \

@@ -28,6 +28,7 @@ ENV SSS_SPLIT="/usr/local/bin/secret-share-split"
 # For PKCS#11 Proxy Services
 # ENV PKCS11_PROXY_PORT=5657
 # # ENV PKCS11_DAEMON_SOCKET="tcp://0.0.0.0:5657"
+ENV PKCS11_MODULE="/usr/local/lib/softhsm/libsofthsm2.so"
 ENV PKCS11_DAEMON_SOCKET="tls://0.0.0.0:${PKCS11_PROXY_PORT}"
 ENV PKCS11_PROXY_TLS_PSK_FILE="/root/TLS-PSK"
 # EXPOSE ${PKCS11_PROXY_PORT}

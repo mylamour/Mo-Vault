@@ -52,7 +52,7 @@ class HSM(object):
         #     self.secret_version = int_to_bytes(secret_version)
 
         # self.lib = pkcs11.lib(PKCS11_PROXY_MODULE)
-        self.lib = pkcs11.lib("/usr/lib/softhsm/libsofthsm2.so")
+        self.lib = pkcs11.lib(PKCS11_MODULE)
 
         self.slot = self.lib.get_token(token_label=slot)
 
