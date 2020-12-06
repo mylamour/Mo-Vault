@@ -14,7 +14,7 @@ services:
       args:
         HSM_KEYSHARES: ${HSM_KEYSHARES}
         HSM_KEY_THESHOLD: ${HSM_KEY_THESHOLD}
-        MY_TOKENLABLE: ${MY_TOKENLABLE}
+        MY_TOKENLABEL: ${MY_TOKENLABEL}
         MY_PKCS11_PROXY_PORT: ${MY_PKCS11_PROXY_PORT}
     image: mo-softhsm2-proxy
     expose: 

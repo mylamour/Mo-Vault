@@ -53,6 +53,15 @@ $ curl --header "Content-Type: application/json"  --request POST --data '{"secre
 {
   "plaintext": "you are handsome man"
 }
+
+$ curl --header "Content-Type: application/json"  --request POST --data '{"secret_path":"random_test/rsa", "secret_version":"2","data":"you are handsome man" }' http://127.0.0.1:8443/key/sign
+{"signature":"a2060faf5d2be526e37e9e19ad992db53aee7a3cb2abe52ea65867760d3e1ab952e0f608a521a188e064cc3fd667803b38520be80c445cd36f2f71b153af613ce9ffc70d2404e12d0fbdc5843c8221090894056824f635bfe977980db2c956a6506f1b94aada4a071ead225862a2cdf77f61dc857b4af9d9d0f3c7ba3642db8d3c7a7032eb30b578e0f857aeb700d1087d8ff5c3b94a197b3393501da404d0fe239e9ccbce79cc92d355978f98686ee7d28afe5fbb2631613887fa8df27bf98ebb6b7d4c2f8f7832545575d573963b519d59178f16247579b00e3bb8473747c37036e6f432be05bc4df0036e3166f57ba7b5bf1ec93059d4de550f8a20457fef"}
+
+$ curl --header "Content-Type: application/json"  --request POST --data '{"secret_path":"random_test/rsa", "secret_version":"2","data":"you are handsome man","signature":"a2060faf5d2be526e37e9e19ad992db53aee7a3cb2abe52ea65867760d3e1ab952e0f608a521a188e064cc3fd667803b38520be80c445cd36f2f71b153af613ce9ffc70d2404e12d0fbdc5843c8221090894056824f635bfe977980db2c956a6506f1b94aada4a071ead225862a2cdf77f61dc857b4af9d9d0f3c7ba3642db8d3c7a7032eb30b578e0f857aeb700d1087d8ff5c3b94a197b3393501da404d0fe239e9ccbce79cc92d355978f98686ee7d28afe5fbb2631613887fa8df27bf98ebb6b7d4c2f8f7832545575d573963b519d59178f16247579b00e3bb8473747c37036e6f432be05bc4df0036e3166f57ba7b5bf1ec93059d4de550f8a20457fef" }' http://127.0.0.1:8443/key/verify
+{"result":true}
+
+$ curl --header "Content-Type: application/json"  --request POST --data '{"secret_path":"random_test/rsa", "secret_version":"2","data":"you are handsome man","signature":"a2060faf5d2be526e37e9e19ad992db53aee7a3cb2abe52ea65867760d3e1ab952e0f608a521a188e064cc3fd667803b38520be80c445cd36f2f71b153af613ce9ffc70d2404e12d0fbdc5843c8221090894056824f635bfe977980db2c956a6506f1b94aada4a071ead225862a2cdf77f61dc857b4af9d9d0f3c7ba3642db8d3c7a7032eb30b578e0f857aeb700d1087d8ff5c3b94a197b3393501da404d0fe239e9ccbce79cc92d355978f98686ee7d28afe5fbb2631613887fa8df27bf98ebb6b7d4c2f8f7832545575d573963b519d59178f16247579b00e3bb8473747c37036e6f432be05bc4df0036e3166f57ba7b5bf1ec93059d4de550f8a20457fex" }' http://127.0.0.1:8443/key/verify
+{"result":false}
 ```
 
 
@@ -75,7 +84,7 @@ as you can see in this picture, i was login into container and use below command
 ```bash
 root@803b461774cd:/# export PKCS11_PROXY_SOCKET="tls://172.17.0.2:5657"
 root@803b461774cd:/# pkcs11-tool --module=/usr/local/lib/libpkcs11-proxy.so -L
-Available slots:
+AvaiLABEL slots:
 Slot 0 (0x9a12019): SoftHSM slot ID 0x9a12019
   token label        : DEMO
   token manufacturer : SoftHSM project
@@ -111,7 +120,7 @@ python code testing
 2. gpg encrypt file without interative.
     `gpg -e -u 'SoftHSMv2_ADMIN' --trust-model always -r PGP_RECIPIENT PIN_SECRET`
 3. if softhsm2 was build manuly, you should change the lib path.
-4. slot token label was able to changed with `docker run -e TOKENLABLE=""` also you can modified the `Dockerfile`
+4. slot token label was able to changed with `docker run -e TOKENLABEL=""` also you can modified the `Dockerfile`
 5. mount voulme,  `- ${PWD}/secrets/:/secrets` is not working, `- ${PWD}/secrets:/secrets` is working
 6. docker rm none tags image `docker rmi $(docker images --filter "dangling=true" -q --no-trunc)`
 7. list user's public keys `gpg --list-public-keys --batch --with-colons | grep pub | cut -d: -f5`

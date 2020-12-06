@@ -19,7 +19,8 @@ class Svault:
             return iv, ciphertext.hex()
         
         if self.key_type == "RSA" :
-            ciphertext = self.secret.encrypt(plaintext)
+            #  with x509 model, you will get same result for same file.
+            ciphertext = self.secret.encrypt(plaintext,mechanism=Mechanism.RSA_X_509)
             return None, ciphertext.hex()
 
     def decrypt(self,ciphertext,iv=None):
@@ -34,14 +35,16 @@ class Svault:
 
     def sign(self,payload):
         if self.key_type == "RSA":
-            signautre = self.secret.sign(payload)
+            signautre  = self.secret.sign(payload,mechanism=Mechanism.SHA256_RSA_PKCS).hex()
             return signautre
-
-
+        
     def verify(self,payload,signautre):
         if self.key_type == "RSA":
-            sameornot = self.secret.verify(string_to_bytes(payload), signautre)
-            return sameornot
+            try:
+                sameornot = self.secret.verify(payload,hex_to_bytes(signautre), mechanism=Mechanism.SHA256_RSA_PKCS)
+                return sameornot
+            except Exception:
+                return False
 
     def wrap(self):
         pass

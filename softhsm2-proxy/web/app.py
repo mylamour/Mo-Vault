@@ -18,7 +18,7 @@ ALLOWED_KEY_TYPS= ["rsa", "aes"]
     - iv
 """
 
-SLOT = os.environ.get("TOKENLABLE")
+SLOT = os.environ.get("TOKENLABEL")
 PIN = os.environ.get("PINSECRET")
 
 app = Flask(__name__)
@@ -118,22 +118,48 @@ def decryptit(key_type):
             if key_type == "aes":
                 oiv = request.json['iv']
                 aes = hsm.get_aes(secret_path, secret_version)
-                aesV = Svault(aes)
                 if aes:
-                    plaintext = aesV.decrypt(ciphertext,iv=oiv)
+                    plaintext = Svault(aes).decrypt(ciphertext,iv=oiv)
                     return jsonify({"plaintext" : "{}".format(plaintext)})
                 else:
                     return jsonify({"Info": "Key not was exsits"})
     return jsonify({"Error":"key type was not supported \n"})
 
 
-@app.route("/key/sign")
+@app.route("/key/sign",methods=['GET', 'POST'])
 def signit():
-    pass
+    if request.method == 'GET':
+        return jsonify({"Info":"Sign only support rsa , please use post method"})
 
-@app.route("/key/verify")
+    if request.method == 'POST':
+        secret_path = request.json['secret_path']
+        secret_version = int(request.json['secret_version'])
+        payload = request.json['data']
+
+        priv = hsm.get_rsa(secret_path,secret_version,keypairs="private")
+        signature = Svault(priv).sign(payload)
+
+        return jsonify({"signature" : signature })
+    
+    return jsonify({"Error":"I don't know what happended now\n"})
+
+@app.route("/key/verify",methods=['GET', 'POST'])
 def verifyit():
-    pass
+    if request.method == 'GET':
+        return jsonify({"Info":"Sign only support rsa , please use post method"})
+
+    if request.method == 'POST':
+        secret_path = request.json['secret_path']
+        secret_version = int(request.json['secret_version'])
+        payload = request.json['data']
+        signature = request.json['signature']
+
+        pub = hsm.get_rsa(secret_path,secret_version,keypairs="public")
+
+        result = Svault(pub).verify(payload,signature)
+        
+        return jsonify({"result" : result })
+    return jsonify({"Error":"I don't know what happended now\n"})
 
 @app.errorhandler(500)
 def internal_error(error):

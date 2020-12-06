@@ -62,7 +62,7 @@ do
 done
 
 
-softhsm2-util --init-token --slot 0 --label ${TOKENLABLE} --pin ${PINSECRET} --so-pin ${SOPINSECRET}
+softhsm2-util --init-token --slot 0 --label ${TOKENLABEL} --pin ${PINSECRET} --so-pin ${SOPINSECRET}
 
 # unset PINSECRET
 # unset SOPINSECRET
