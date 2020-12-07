@@ -1,14 +1,19 @@
 import os
 import logging
 from logging import Formatter, FileHandler
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file, flash, redirect, send_from_directory
+from werkzeug.utils import secure_filename
 from waitress import serve
 from src import HSM, Svault, int_to_bytes, hex_to_bytes
 from pkcs11 import KeyType, ObjectClass, Mechanism
 from pkcs11.exceptions import PinIncorrect, NoSuchKey, NoSuchToken, MultipleObjectsReturned
 
-
+basedir = os.path.abspath(os.path.dirname(__file__))
 ALLOWED_KEY_TYPS= ["rsa", "aes"]
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif', 'pdf','word','ppt','txt'])
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 """
     - key_type
@@ -22,7 +27,12 @@ SLOT = os.environ.get("TOKENLABEL")
 PIN = os.environ.get("PINSECRET")
 
 app = Flask(__name__)
+
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+
 hsm = HSM(slot=SLOT, pin=PIN) # it should be managed as session
+
+_VERSION = 0.1
 
 @app.route("/")
 def hello():
@@ -126,15 +136,25 @@ def decryptit(key_type):
     return jsonify({"Error":"key type was not supported \n"})
 
 
-@app.route("/key/sign",methods=['GET', 'POST'])
-def signit():
+@app.route("/key/sign/<payload_type>",methods=['GET', 'POST'])
+def signit(payload_type):
     if request.method == 'GET':
         return jsonify({"Info":"Sign only support rsa , please use post method"})
 
     if request.method == 'POST':
-        secret_path = request.json['secret_path']
-        secret_version = int(request.json['secret_version'])
-        payload = request.json['data']
+
+        if payload_type == "message":
+            secret_path = request.json['secret_path']
+            secret_version = int(request.json['secret_version'])
+            payload = request.json['data']
+
+        if payload_type == "file":
+            secret_path = request.form['secret_path']
+            secret_version = int(request.form['secret_version'])
+            ufile = request.files['data']
+
+            if ufile and allowed_file(ufile.filename):
+                payload = ufile.read()
 
         priv = hsm.get_rsa(secret_path,secret_version,keypairs="private")
         signature = Svault(priv).sign(payload)
@@ -143,23 +163,40 @@ def signit():
     
     return jsonify({"Error":"I don't know what happended now\n"})
 
-@app.route("/key/verify",methods=['GET', 'POST'])
-def verifyit():
+@app.route("/key/verify/<payload_type>",methods=['GET', 'POST'])
+def verifyit(payload_type):
     if request.method == 'GET':
         return jsonify({"Info":"Sign only support rsa , please use post method"})
 
     if request.method == 'POST':
-        secret_path = request.json['secret_path']
-        secret_version = int(request.json['secret_version'])
-        payload = request.json['data']
-        signature = request.json['signature']
+
+        if payload_type == "message":
+            secret_path = request.json['secret_path']
+            secret_version = int(request.json['secret_version'])
+            signature = request.json['signature']
+
+            payload = request.json['data']
+
+        if payload_type == "file":
+            secret_path = request.form['secret_path']
+            secret_version = int(request.form['secret_version'])
+            signature = request.form['signature']
+
+            ufile = request.files['data']
+
+            if ufile and allowed_file(ufile.filename):
+                payload = ufile.read()
+
 
         pub = hsm.get_rsa(secret_path,secret_version,keypairs="public")
 
         result = Svault(pub).verify(payload,signature)
         
-        return jsonify({"result" : result })
+        return jsonify({"Verify Result" : result })
+
     return jsonify({"Error":"I don't know what happended now\n"})
+
+@app.route("/download")
 
 @app.errorhandler(500)
 def internal_error(error):

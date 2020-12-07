@@ -54,14 +54,19 @@ $ curl --header "Content-Type: application/json"  --request POST --data '{"secre
   "plaintext": "you are handsome man"
 }
 
-$ curl --header "Content-Type: application/json"  --request POST --data '{"secret_path":"random_test/rsa", "secret_version":"2","data":"you are handsome man" }' http://127.0.0.1:8443/key/sign
+$ curl --header "Content-Type: application/json"  --request POST --data '{"secret_path":"random_test/rsa", "secret_version":"2","data":"you are handsome man" }' http://127.0.0.1:8443/key/sign/message
 {"signature":"a2060faf5d2be526e37e9e19ad992db53aee7a3cb2abe52ea65867760d3e1ab952e0f608a521a188e064cc3fd667803b38520be80c445cd36f2f71b153af613ce9ffc70d2404e12d0fbdc5843c8221090894056824f635bfe977980db2c956a6506f1b94aada4a071ead225862a2cdf77f61dc857b4af9d9d0f3c7ba3642db8d3c7a7032eb30b578e0f857aeb700d1087d8ff5c3b94a197b3393501da404d0fe239e9ccbce79cc92d355978f98686ee7d28afe5fbb2631613887fa8df27bf98ebb6b7d4c2f8f7832545575d573963b519d59178f16247579b00e3bb8473747c37036e6f432be05bc4df0036e3166f57ba7b5bf1ec93059d4de550f8a20457fef"}
 
-$ curl --header "Content-Type: application/json"  --request POST --data '{"secret_path":"random_test/rsa", "secret_version":"2","data":"you are handsome man","signature":"a2060faf5d2be526e37e9e19ad992db53aee7a3cb2abe52ea65867760d3e1ab952e0f608a521a188e064cc3fd667803b38520be80c445cd36f2f71b153af613ce9ffc70d2404e12d0fbdc5843c8221090894056824f635bfe977980db2c956a6506f1b94aada4a071ead225862a2cdf77f61dc857b4af9d9d0f3c7ba3642db8d3c7a7032eb30b578e0f857aeb700d1087d8ff5c3b94a197b3393501da404d0fe239e9ccbce79cc92d355978f98686ee7d28afe5fbb2631613887fa8df27bf98ebb6b7d4c2f8f7832545575d573963b519d59178f16247579b00e3bb8473747c37036e6f432be05bc4df0036e3166f57ba7b5bf1ec93059d4de550f8a20457fef" }' http://127.0.0.1:8443/key/verify
-{"result":true}
+$ curl -F "data=@test.txt" -F "secret_path=random_test/rsa" -F "secret_version=2" 127.0.0.1:8443/key/sign/file
+{"signature":"5c40168d2f7c1b3baaaa5828c45dc406860b6a043c8b3fe43d471e67254bf038affabba32fd27148f7ac8a78c0fa6f3457f027a6a0cbdb3b42c283d30b4041842eece25fc51d15d941f2ec5298e2fc1a1d0bb39e22a90b31c92d3491ac9864f0c633076505a9c9d31917db1a8fb9f81f94bb9348ed28e7940b2ca9350b6a7b5d334dcc5e92f75b45c28cddb526fcae897cc9f9c42eaa0ab4b6d6f3c9fbefb3287bf542114bf388f75b022c072735860be928a3cbb36a224f904148c4dd5d3cd4de9d7796be5b97f15c2e5bc20e9f4491cae9a6cd29671a2ad277cfc097a00de14612055e9b93e01b0865601e475704ec911fe8eb043547c3c848d69a66f77534"}
 
-$ curl --header "Content-Type: application/json"  --request POST --data '{"secret_path":"random_test/rsa", "secret_version":"2","data":"you are handsome man","signature":"a2060faf5d2be526e37e9e19ad992db53aee7a3cb2abe52ea65867760d3e1ab952e0f608a521a188e064cc3fd667803b38520be80c445cd36f2f71b153af613ce9ffc70d2404e12d0fbdc5843c8221090894056824f635bfe977980db2c956a6506f1b94aada4a071ead225862a2cdf77f61dc857b4af9d9d0f3c7ba3642db8d3c7a7032eb30b578e0f857aeb700d1087d8ff5c3b94a197b3393501da404d0fe239e9ccbce79cc92d355978f98686ee7d28afe5fbb2631613887fa8df27bf98ebb6b7d4c2f8f7832545575d573963b519d59178f16247579b00e3bb8473747c37036e6f432be05bc4df0036e3166f57ba7b5bf1ec93059d4de550f8a20457fex" }' http://127.0.0.1:8443/key/verify
-{"result":false}
+$ curl --header "Content-Type: application/json"  --request POST --data '{"secret_path":"random_test/rsa", "secret_version":"2","data":"you are handsome man","signature":"a2060faf5d2be526e37e9e19ad992db53aee7a3cb2abe52ea65867760d3e1ab952e0f608a521a188e064cc3fd667803b38520be80c445cd36f2f71b153af613ce9ffc70d2404e12d0fbdc5843c8221090894056824f635bfe977980db2c956a6506f1b94aada4a071ead225862a2cdf77f61dc857b4af9d9d0f3c7ba3642db8d3c7a7032eb30b578e0f857aeb700d1087d8ff5c3b94a197b3393501da404d0fe239e9ccbce79cc92d355978f98686ee7d28afe5fbb2631613887fa8df27bf98ebb6b7d4c2f8f7832545575d573963b519d59178f16247579b00e3bb8473747c37036e6f432be05bc4df0036e3166f57ba7b5bf1ec93059d4de550f8a20457fef" }' http://127.0.0.1:8443/key/verify/message
+{"Verify Result":true}
+
+$ curl -F "data=@test.txt" -F "secret_path=random_test/rsa" -F "secret_version=2" -F "signature=5c40168d2f7c1b3baaaa5828c45dc406860b6a043c8b3fe43d471e67254bf038affabba32fd27148f7ac8a78c0fa6f3457f027a6a0cbdb3b42c283d30b4041842eece25fc51d15d941f2ec5298e2fc1a1d0bb39e22a90b31c92d3491ac9864f0c633076505a9c9d31917db1a8fb9f81f94bb9348ed28e7940b2ca9350b6a7b5d334dcc5e92f75b45c28cddb526fcae897cc9f9c42eaa0ab4b6d6f3c9fbefb3287bf542114bf388f75b022c072735860be928a3cbb36a224f904148c4dd5d3cd4de9d7796be5b97f15c2e5bc20e9f4491cae9a6cd29671a2ad277cfc097a00de14612055e9b93e01b0865601e475704ec911fe8eb043547c3c848d69a66f77534" 127.0.0.1:8443/key/verify/file
+{"Verify Result":true}
+
+
 ```
 
 
