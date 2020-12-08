@@ -27,7 +27,6 @@ SLOT = os.environ.get("TOKENLABEL")
 PIN = os.environ.get("PINSECRET")
 
 app = Flask(__name__)
-
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
 hsm = HSM(slot=SLOT, pin=PIN) # it should be managed as session
@@ -84,9 +83,8 @@ def encryptit(key_type):
             plaintext = request.json['plaintext']
         
             if key_type == "rsa":
-                pub, _ = hsm.get_rsa(secret_path,secret_version)
-                pubV = Svault(pub)
-                _, ciphertext = pubV.encrypt(plaintext)
+                pub = hsm.get_rsa(secret_path,secret_version,"public")
+                ciphertext = Svault(pub).encrypt(plaintext)
                 if pub:
                     return jsonify({"ciphertext" : "{}".format(ciphertext)})
                 else:
@@ -94,9 +92,8 @@ def encryptit(key_type):
 
             if key_type == "aes":
                 aes = hsm.get_aes(secret_path, secret_version)
-                aesV = Svault(aes)
                 if aes:
-                    iv, ciphertext = aesV.encrypt(plaintext)
+                    iv, ciphertext = Svault(aes).encrypt(plaintext)
                     return jsonify({"iv": iv, "ciphertext": "{}".format(ciphertext)})
                 else:
                     return jsonify({"Info": "Key not was exsits"})
@@ -116,11 +113,9 @@ def decryptit(key_type):
             ciphertext = request.json['ciphertext']
         
             if key_type == "rsa":
-                priv = hsm.get_rsa(secret_path,secret_version,keypairs="private")
-                privV = Svault(priv)
-
+                priv = hsm.get_rsa(secret_path,secret_version,"private")
                 if priv:
-                    plaintext = privV.decrypt(ciphertext)
+                    plaintext = Svault(priv).decrypt(ciphertext)
                     return jsonify({"plaintext" : "{}".format(plaintext)})
                 else:
                     return jsonify({"Info": "Key was not exsits"})

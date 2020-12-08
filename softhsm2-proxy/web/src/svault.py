@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 from .utils import string_to_bytes, bytes_to_string, bytes_to_hex, hex_to_bytes
-from pkcs11 import KeyType, ObjectClass, Mechanism
+from pkcs11 import KeyType, ObjectClass, Mechanism, MGF
 from pkcs11.util.rsa import encode_rsa_public_key
 
 class Svault:
@@ -20,8 +20,8 @@ class Svault:
         
         if self.key_type == "RSA" :
             #  with x509 model, you will get same result for same file.
-            ciphertext = self.secret.encrypt(plaintext,mechanism=Mechanism.RSA_X_509)
-            return None, ciphertext.hex()
+            ciphertext = self.secret.encrypt(plaintext,mechanism=Mechanism.RSA_PKCS_OAEP,mechanism_param=(Mechanism.SHA_1,MGF.SHA1,None))
+            return ciphertext.hex()
 
     def decrypt(self,ciphertext,iv=None):
         if self.key_type == "AES":
@@ -30,7 +30,7 @@ class Svault:
 
 
         if self.key_type == "RSA":
-            plaintext = self.secret.decrypt(hex_to_bytes(ciphertext))
+            plaintext = self.secret.decrypt(hex_to_bytes(ciphertext),mechanism=Mechanism.RSA_PKCS_OAEP,mechanism_param=(Mechanism.SHA_1,MGF.SHA1,None))
             return bytes_to_string(plaintext)
 
     def sign(self,payload):
