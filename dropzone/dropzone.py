@@ -2,6 +2,11 @@ import os
 import json
 import logging
 import requests
+import hashlib
+
+from Crypto import Random
+from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
 
 from pyftpdlib.authorizers import UnixAuthorizer, DummyAuthorizer
 from pyftpdlib.filesystems import UnixFilesystem
@@ -10,9 +15,33 @@ from pyftpdlib.servers import FTPServer
 
 SECRET_PATH = "random_test/rsa"
 SECRET_VERSION = "2"
+EAAS_HOST = "http://127.0.0.1"
+EAAS_PORT = "8443"
+
+def key_decrypt(ciphertext):
+    data = {"secret_path": SECRET_PATH, "secret_version": SECRET_VERSION, "ciphertext": ciphertext}
+
+    response = requests.post('{}:{}/key/decrypt/rsa'.format(EAAS_HOST, EAAS_PORT), json=data)
+
+    return json.loads(response.text)['plaintext']
+
+def key_encrypt(plaintext):
+    data = {"secret_path": "{}".format(
+        SECRET_PATH), "secret_version": SECRET_VERSION, "plaintext":plaintext}
+
+    response = requests.post('{}:{}/key/encrypt/rsa'.format(EAAS_HOST, EAAS_PORT), json=data)
+
+    
+    return json.loads(response.text)['ciphertext']
 
 
 class Dropzone(FTPHandler):
+
+
+    key = None
+    kek_path = None
+    key_size=256
+    
     def on_connect(self):
         print("%s:%s connected" % (self.remote_ip, self.remote_port))
 
@@ -21,41 +50,76 @@ class Dropzone(FTPHandler):
         pass
 
     def on_login(self, username):
+
         # do something when user login
-        pass
+        self.kek_path = ".{}.secret".format(hashlib.sha224(username.encode('utf-8')).hexdigest())
+
+        if os.path.exists(self.kek_path):
+            self.key = bytes.fromhex(key_decrypt(open(self.kek_path,'r').read()))
+            os.remove(self.kek_path)
+        
+            for path, _, files in os.walk(username):
+                for name in files:
+                    self.decrypt_file(os.path.join(path, name))
+                    os.remove(os.path.join(path, name))
 
     def on_logout(self, username):
         # do something when user logs out
-        pass
+        self.key = get_random_bytes(32)
+
+        for path, _, files in os.walk(os.getcwd()):
+            for name in files:
+                self.encrypt_file(os.path.join(path, name))
+                os.remove(os.path.join(path, name))
+
+
+        # byter-> to string
+        with open(self.kek_path, 'w') as f:
+            f.write(key_encrypt(self.key.hex()))
+
 
     def on_file_sent(self, file):
-        # do something when a file has been sent
-        data = {"secret_path": SECRET_PATH, "secret_version": SECRET_VERSION, "ciphertext": open(file, 'rb').read().decode("utf-8")}
-
-        response = requests.post(
-            'http://127.0.0.1:8443/key/decrypt/rsa', json=data)
-
-        with open(file, 'w') as f:
-            f.write(json.dumps(response.text)['plaintext'])
+        pass
 
     def on_file_received(self, file):
+        pass
 
-        data = {"secret_path": "{}".format(
-            SECRET_PATH), "secret_version": SECRET_VERSION, "plaintext": "{}".format(open(file, 'rb').read())}
-
-        response = requests.post(
-            'http://127.0.0.1:8443/key/encrypt/rsa', json=data)
-
-        with open(file, 'w') as f:
-            f.write(json.loads(response.text)['ciphertext'])
 
     def on_incomplete_file_sent(self, file):
         # do something when a file is partially sent
         pass
 
     def on_incomplete_file_received(self, file):
-        # remove partially uploaded files
         os.remove(file)
+
+    def pad(self, s):
+        return s + b"\0" * (AES.block_size - len(s) % AES.block_size)
+
+    def encrypt(self, message):
+        message = self.pad(message)
+        iv = Random.new().read(AES.block_size)
+        cipher = AES.new(self.key, AES.MODE_CBC, iv)
+        return iv + cipher.encrypt(message)
+
+    def decrypt(self, ciphertext):
+        iv = ciphertext[:AES.block_size]
+        cipher = AES.new(self.key, AES.MODE_CBC, iv)
+        plaintext = cipher.decrypt(ciphertext[AES.block_size:])
+        return plaintext.rstrip(b"\0")
+
+    def encrypt_file(self, file_name):
+        with open(file_name, 'rb') as fo:
+            plaintext = fo.read()
+        enc = self.encrypt(plaintext)
+        with open(file_name + ".enc", 'wb') as fo:
+            fo.write(enc)
+
+    def decrypt_file(self, file_name):
+        with open(file_name, 'rb') as fo:
+            ciphertext = fo.read()
+        dec = self.decrypt(ciphertext)
+        with open(file_name[:-4], 'wb') as fo:
+            fo.write(dec)
 
 
 def main():
@@ -66,7 +130,7 @@ def main():
     # Define a new user having full r/w permissions and a read-only
     # anonymous user
     # os.getcwd()
-    authorizer.add_user('user', '12345', os.getcwd(), perm='elradfmwMT')
+    authorizer.add_user('s', 's', os.getcwd(), perm='elradfmwMT')
     authorizer.add_anonymous(os.getcwd())
 
     # Instantiate FTP handler class
