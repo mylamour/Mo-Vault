@@ -1,8 +1,7 @@
-ftp > prompt
-interactive mode off
-ftp > mput *
+![dropzone](https://user-images.githubusercontent.com/12653147/101760437-d0e5b880-3b15-11eb-9101-af7bfc5f6b03.gif)
 
-lftp to use ssl
+
+* use lftp  with ssl 
 
 ```bash
 
@@ -20,5 +19,12 @@ drwxrwxr-x   2 ian      ian          4096 Dec 10 08:03 openssl
 ```
 
 
-# generate ssl cert
- openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365
+* generate ssl cert
+` openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 365`
+ 
+ * upload mutliple file without prompt
+```bash
+ftp > prompt
+interactive mode off
+ftp > mput *
+```
