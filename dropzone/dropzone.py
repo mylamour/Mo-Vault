@@ -4,6 +4,7 @@ import logging
 import requests
 import hashlib
 
+from fs.osfs import OSFS
 from Crypto import Random
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
@@ -11,12 +12,15 @@ from Crypto.Random import get_random_bytes
 from pyftpdlib.authorizers import UnixAuthorizer, DummyAuthorizer
 from pyftpdlib.filesystems import UnixFilesystem
 from pyftpdlib.handlers import FTPHandler, TLS_FTPHandler
-from pyftpdlib.servers import FTPServer
+from pyftpdlib.servers import FTPServer, MultiprocessFTPServer
 
 SECRET_PATH = "random_test/rsa"
 SECRET_VERSION = "2"
 EAAS_HOST = "http://127.0.0.1"
 EAAS_PORT = "8443"
+CERTFILE = os.path.abspath(os.path.join(os.path.dirname(__file__),"keycert.pem"))
+
+TLS = False
 
 def key_decrypt(ciphertext):
     data = {"secret_path": SECRET_PATH, "secret_version": SECRET_VERSION, "ciphertext": ciphertext}
@@ -35,47 +39,53 @@ def key_encrypt(plaintext):
     return json.loads(response.text)['ciphertext']
 
 
-class Dropzone(FTPHandler):
+class Dropzone(TLS_FTPHandler):
 
 
     key = None
     kek_path = None
     key_size=256
-    
+    home_dir = None
+
     def on_connect(self):
         print("%s:%s connected" % (self.remote_ip, self.remote_port))
 
     def on_disconnect(self):
-        # do something when client disconnects
         pass
 
     def on_login(self, username):
+        self.kek_path = "keks/.{}.secret".format(hashlib.sha224(username.encode('utf-8')).hexdigest())
+        self.home_dir = "remote/{}".format(username)
 
-        # do something when user login
-        self.kek_path = ".{}.secret".format(hashlib.sha224(username.encode('utf-8')).hexdigest())
+        if not os.path.isdir(self.home_dir):
+            os.mkdir(self.home_dir)
 
         if os.path.exists(self.kek_path):
             self.key = bytes.fromhex(key_decrypt(open(self.kek_path,'r').read()))
             os.remove(self.kek_path)
         
-            for path, _, files in os.walk(username):
+            for path, _, files in os.walk(self.home_dir):
                 for name in files:
-                    self.decrypt_file(os.path.join(path, name))
-                    os.remove(os.path.join(path, name))
+                    if name.endswith(".enc"):
+                        self.decrypt_file(os.path.join(path, name))
+                        os.remove(os.path.join(path, name))
 
     def on_logout(self, username):
-        # do something when user logs out
         self.key = get_random_bytes(32)
+        flag = True
 
-        for path, _, files in os.walk(os.getcwd()):
+        for path, _, files in os.walk(self.home_dir):
             for name in files:
-                self.encrypt_file(os.path.join(path, name))
-                os.remove(os.path.join(path, name))
+                if not name.endswith(".enc"):
+                    self.encrypt_file(os.path.join(path, name))
+                    os.remove(os.path.join(path, name))
+                else:
+                    flag = False
 
-
-        # byter-> to string
-        with open(self.kek_path, 'w') as f:
-            f.write(key_encrypt(self.key.hex()))
+        if flag:
+            # byter-> to string
+            with open(self.kek_path, 'w') as f:
+                f.write(key_encrypt(self.key.hex()))
 
 
     def on_file_sent(self, file):
@@ -86,7 +96,6 @@ class Dropzone(FTPHandler):
 
 
     def on_incomplete_file_sent(self, file):
-        # do something when a file is partially sent
         pass
 
     def on_incomplete_file_received(self, file):
@@ -126,20 +135,25 @@ def main():
     # authorizer = UnixAuthorizer(rejected_users=["root"],
     #                             require_valid_shell=True)
     authorizer = DummyAuthorizer()
+    handler = Dropzone
 
     # Define a new user having full r/w permissions and a read-only
     # anonymous user
     # os.getcwd()
-    authorizer.add_user('s', 's', os.getcwd(), perm='elradfmwMT')
-    authorizer.add_anonymous(os.getcwd())
+    username = 's'
+    password = 's'
 
-    # Instantiate FTP handler class
-    handler = Dropzone
+    home_dir = "remote/s"
+    
+    authorizer.add_user(username, password, home_dir, perm='elradfmwMT')
+    # authorizer.add_anonymous()
+
     handler.authorizer = authorizer
+    handler.certfile = CERTFILE
 
-    # handler.certfile = 'keycert.pem'
-    # handler.tls_control_required = True
-    # handler.tls_data_required = True
+    if TLS:
+        handler.tls_control_required = True
+        handler.tls_data_required = True
 
     # Define a customized banner (string returned when client connects)
     handler.banner = "Share your data with dropzone."
@@ -147,7 +161,7 @@ def main():
     handler.passive_ports = range(60000, 65535)
 
     handler.abstracted_fs = UnixFilesystem
-    server = FTPServer(('', 2121), handler)
+    server = MultiprocessFTPServer(('', 2121), handler)
     server.serve_forever()
 
 
