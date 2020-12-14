@@ -4,3 +4,5 @@ openssl x509 -req -engine pkcs11 -in tests/csr.pem -CAkeyform engine -CAkey 6969
 ```
 
 also you can configure `PIN=pass` in openssl config file
+
+docs: https://github.com/mylamour/blog/issues/80
