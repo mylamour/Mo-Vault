@@ -3,8 +3,8 @@ import json
 import logging
 import requests
 import hashlib
+import importlib.util
 
-from fs.osfs import OSFS
 from Crypto import Random
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
@@ -22,6 +22,25 @@ CERTFILE = os.path.abspath(os.path.join(os.path.dirname(__file__),"keycert.pem")
 
 TLS = False
 
+current_directory =  os.path.dirname(os.path.abspath(__file__))
+SECPLUGINS = []
+
+def load_plugins():
+    plugin_dir = os.path.join(current_directory,"plugins")
+    if os.path.exists(plugin_dir):
+        plugin_files = [f for f in os.listdir(plugin_dir) if f.endswith(".py")]
+        if plugin_files:
+            for file_name in plugin_files:
+                file_abspath = os.path.join(plugin_dir,file_name)
+                spec = importlib.util.spec_from_file_location(file_name[:-3],file_abspath)
+                if spec is not None:
+                    module = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(module)
+
+                    if hasattr(module, "malware"):
+                        SECPLUGINS.append(module)
+
+
 def key_decrypt(ciphertext):
     data = {"secret_path": SECRET_PATH, "secret_version": SECRET_VERSION, "ciphertext": ciphertext}
 
@@ -34,7 +53,6 @@ def key_encrypt(plaintext):
         SECRET_PATH), "secret_version": SECRET_VERSION, "plaintext":plaintext}
 
     response = requests.post('{}:{}/key/encrypt/rsa'.format(EAAS_HOST, EAAS_PORT), json=data)
-
     
     return json.loads(response.text)['ciphertext']
 
@@ -79,8 +97,6 @@ class Dropzone(TLS_FTPHandler):
                 if not name.endswith(".enc"):
                     self.encrypt_file(os.path.join(path, name))
                     os.remove(os.path.join(path, name))
-                else:
-                    flag = False
 
         if flag:
             # byter-> to string
@@ -92,8 +108,17 @@ class Dropzone(TLS_FTPHandler):
         pass
 
     def on_file_received(self, file):
-        pass
+        for pl in SECPLUGINS:
+            malware = pl.malware(file)
 
+            if malware:
+                # os.remove(file)
+                pass
+
+            else:
+                self.encrypt_file(file)
+                if os.path.exists("{}.enc".format(file)):
+                    os.remove(file)
 
     def on_incomplete_file_sent(self, file):
         pass
@@ -132,6 +157,9 @@ class Dropzone(TLS_FTPHandler):
 
 
 def main():
+
+    load_plugins()
+    # need a ldap authorizer
     # authorizer = UnixAuthorizer(rejected_users=["root"],
     #                             require_valid_shell=True)
     authorizer = DummyAuthorizer()

@@ -1,3 +1,4 @@
 requests==2.22.0
 pyftpdlib==1.5.6
 pycryptodome==3.9.9
+yara-python=4.0.2
