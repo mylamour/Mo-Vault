@@ -34,3 +34,9 @@ client_tcp(){
     # pkcs11-tool --module=/usr/local/lib/libpkcs11-proxy.so -L
     python3 app.py
 }
+
+
+export TOKENLABEL=OpenDNSSEC
+export PINSECRET=1234
+export PKCS11_MODULE=/usr/local/lib/softhsm/libsofthsm2.so
+python3 app.py

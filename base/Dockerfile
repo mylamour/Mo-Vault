@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install -y opensc opensc-pkcs11 \
 RUN git clone https://github.com/opendnssec/SoftHSMv2 && \
     cd SoftHSMv2 && \
     ./autogen.sh && \
-    ./configure --with-objectstore-backend-db --with-crypto-backend=botan --with-objectstore-backend-db && \
+    ./configure --with-objectstore-backend-db --with-crypto-backend=botan && \
     make -j8 && make install 
 
 RUN git clone https://github.com/SUNET/pkcs11-proxy && \
