@@ -1,15 +1,16 @@
 import os
 import datetime
-from subprocess import Popen, PIPE
+import tempfile
 
 from cryptography import x509
-
 from cryptography.hazmat.primitives import hashes
 from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.backends.openssl import backend
+
+from subprocess import Popen, PIPE
 
 # from src import HSM, Svault, int_to_bytes, hex_to_bytes
 # from pkcs11 import KeyType, ObjectClass, Mechanism
@@ -79,10 +80,14 @@ p = Popen(["openssl x509 -req -engine pkcs11 -in {} -CAkeyform engine -CAkey {} 
     csr_file_path, key_id, ca_certs, newcert_file_path)],  stdin=PIPE, stdout=PIPE, stderr=PIPE, shell=True )
 
 
+# openssl pkcs12 -export -out certificate.pfx -inkey privateKey.key -in certificate.crt -certfile more.crt
+
 if os.path.exists(p12file) and os.path.isfile(p12file):
     with open(p12file, "wb") as f:
         f.write(key,)
 
+
+# openssl pkcs12 -export -out certificate.pfx -inkey privateKey.key -in certificate.crt -certfile more.crt
 
 # from cryptography.hazmat.primitives.serialization import load_pem_private_key
 # key = load_pem_private_key(open("tests/key.pem").read().encode("utf-8"), password=b"pass", backend=backend)
