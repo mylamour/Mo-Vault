@@ -29,3 +29,13 @@ RUN git clone https://github.com/SUNET/pkcs11-proxy && \
     cmake . && \
     make && \
     make install
+
+RUN git clone https://github.com/OpenSC/libp11 && \
+    cd libp11 && \
+    ./bootstrap && \
+    ./configure && \
+    make -j8 && make install
+
+# RUN apt-get remove --purge -y autoconf automake pkg-config botan llvm curl gcc \
+#     cmake sqlite3 libtool libseccomp-dev libssl-dev libsqlite3-dev libp11-dev libbotan-2-dev && \
+#     apt-get -y autoremove

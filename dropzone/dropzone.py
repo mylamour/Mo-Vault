@@ -14,8 +14,9 @@ from pyftpdlib.filesystems import UnixFilesystem
 from pyftpdlib.handlers import FTPHandler, TLS_FTPHandler
 from pyftpdlib.servers import FTPServer, MultiprocessFTPServer
 
-SECRET_PATH = "random_test/rsa"
-SECRET_VERSION = "2"
+FTP_PROT = os.environ.get("DROPZONE_PORT")
+SECRET_PATH = os.environ.get("DROPZONE_SECRET_PATH")
+SECRET_VERSION = os.environ.get("DROPZONE_SECRET_VERSION")
 EAAS_HOST = "http://127.0.0.1"
 EAAS_PORT = "8443"
 CERTFILE = os.path.abspath(os.path.join(os.path.dirname(__file__),"keycert.pem"))

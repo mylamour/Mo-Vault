@@ -1,13 +1,14 @@
 version: "3"
 services:
 
-  softhsm2-proxy-base:
+  base:
     build: base/
-    image: softhsm2-proxy:base
+    image: mo-vault:base
 
-  softhsm2-proxy:
+  # encryption as a service
+  eaas:
     depends_on: 
-      - softhsm2-proxy-base
+      - base
     build: 
       context: softhsm2-proxy/
       #  This part was help to pass vairables from docker-compose file to DockerFile
@@ -16,10 +17,29 @@ services:
         HSM_KEY_THESHOLD: ${HSM_KEY_THESHOLD}
         MY_TOKENLABEL: ${MY_TOKENLABEL}
         MY_PKCS11_PROXY_PORT: ${MY_PKCS11_PROXY_PORT}
-    image: mo-softhsm2-proxy
-    expose: 
-      - ${MY_PKCS11_PROXY_PORT}
-      - 8443
+    image: mo-vault:eaas
+    ports:
+      - "${MY_PKCS11_PROXY_PORT}:${MY_PKCS11_PROXY_PORT}"
+      - "8443:8443"
     volumes:
       # - ${PWD}/secrets/PIN_PRO.testing.public.asc:/tmp/public.asc
-      - ${PWD}/softhsm2-proxy:/root
+      - ${PWD}/softhsm2-proxy:/eaas
+      - $PWD/tokens/user02:/var/tokens
+
+  dropzone:
+    depends_on: 
+      - eaas
+    build: 
+      context: dropzone/
+      args:
+        DROPZONE_PORT: ${DROPZONE_PORT}
+        DROPZONE_SECRET_PATH: ${DROPZONE_SECRET_PATH}
+        DROPZONE_SECRET_VERSION: ${DROPZONE_SECRET_VERSION}
+   
+    image: mo-vault:dropzone
+    ports: 
+      - "${DROPZONE_PORT}:${DROPZONE_PORT}"
+
+    volumes:
+      - ${PWD}/dropzone:/dropzone
+
