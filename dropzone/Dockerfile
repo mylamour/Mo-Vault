@@ -1,4 +1,4 @@
-FROM mo-vault:eaas
+FROM mo-vault:base
 LABEL maintainer "Mour <mylamour@163.com>"
 
 
@@ -6,14 +6,12 @@ ARG DROPZONE_PORT
 ARG DROPZONE_SECRET_PATH
 ARG DROPZONE_SECRET_VERSION
 
-
 ENV DROPZONE_PORT=$DROPZONE_PORT
 ENV DROPZONE_SECRET_PATH=$DROPZONE_SECRET_PATH
 ENV DROPZONE_SECRET_VERSION=$DROPZONE_SECRET_VERSION
 
-ENV EAAS_HOST="http://127.0.0.1:8443/gen/key/rsa"
+ENV EAAS_URL="http://mo-vault_eaas_1:8443"
 
 COPY ./* /dropzone/
 RUN pip3 install -r /dropzone/requirements.txt
 ENTRYPOINT [ "bash","/dropzone/dropzone.sh" ]
-

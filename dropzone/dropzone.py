@@ -17,8 +17,7 @@ from pyftpdlib.servers import FTPServer, MultiprocessFTPServer
 FTP_PROT = os.environ.get("DROPZONE_PORT")
 SECRET_PATH = os.environ.get("DROPZONE_SECRET_PATH")
 SECRET_VERSION = os.environ.get("DROPZONE_SECRET_VERSION")
-EAAS_HOST = "http://127.0.0.1"
-EAAS_PORT = "8443"
+EAAS_URL= os.environ.get("EAAS_URL")
 CERTFILE = os.path.abspath(os.path.join(os.path.dirname(__file__),"keycert.pem"))
 
 TLS = False
@@ -45,7 +44,7 @@ def load_plugins():
 def key_decrypt(ciphertext):
     data = {"secret_path": SECRET_PATH, "secret_version": SECRET_VERSION, "ciphertext": ciphertext}
 
-    response = requests.post('{}:{}/key/decrypt/rsa'.format(EAAS_HOST, EAAS_PORT), json=data)
+    response = requests.post('{}/key/decrypt/rsa'.format(EAAS_URL), json=data)
 
     return json.loads(response.text)['plaintext']
 
@@ -53,7 +52,7 @@ def key_encrypt(plaintext):
     data = {"secret_path": "{}".format(
         SECRET_PATH), "secret_version": SECRET_VERSION, "plaintext":plaintext}
 
-    response = requests.post('{}:{}/key/encrypt/rsa'.format(EAAS_HOST, EAAS_PORT), json=data)
+    response = requests.post('{}/key/encrypt/rsa'.format(EAAS_URL), json=data)
     
     return json.loads(response.text)['ciphertext']
 

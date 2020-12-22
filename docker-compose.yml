@@ -5,6 +5,18 @@ services:
     build: base/
     image: mo-vault:base
 
+  spki:
+    depends_on: 
+      - base
+    build: 
+      context: spki/
+
+    image: mo-vault:spki
+
+    volumes:
+      - ${PWD}/dropzone:/dropzone
+      - ${PWD}/local/spki:/spki
+      
   # encryption as a service
   eaas:
     depends_on: 
@@ -21,10 +33,17 @@ services:
     ports:
       - "${MY_PKCS11_PROXY_PORT}:${MY_PKCS11_PROXY_PORT}"
       - "8443:8443"
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8443"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
     volumes:
       # - ${PWD}/secrets/PIN_PRO.testing.public.asc:/tmp/public.asc
       - ${PWD}/softhsm2-proxy:/eaas
-      - $PWD/tokens/user02:/var/tokens
+      - $PWD/local/tokens/user02:/var/tokens
 
   dropzone:
     depends_on: 
@@ -35,11 +54,12 @@ services:
         DROPZONE_PORT: ${DROPZONE_PORT}
         DROPZONE_SECRET_PATH: ${DROPZONE_SECRET_PATH}
         DROPZONE_SECRET_VERSION: ${DROPZONE_SECRET_VERSION}
-   
+      
     image: mo-vault:dropzone
     ports: 
       - "${DROPZONE_PORT}:${DROPZONE_PORT}"
 
     volumes:
       - ${PWD}/dropzone:/dropzone
-
+      - ${PWD}/local/keks:/dropzone/keks
+      - $PWD/local/remote:/dropzone/remote

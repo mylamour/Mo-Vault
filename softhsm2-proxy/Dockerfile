@@ -1,5 +1,5 @@
 
-FROM softhsm2-proxy:base
+FROM mo-vault:base
 LABEL maintainer "Mour <mylamour@163.com>"
 
 ARG HSM_KEYSHARES
