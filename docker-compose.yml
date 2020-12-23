@@ -4,15 +4,17 @@ services:
   base:
     build: base/
     image: mo-vault:base
+    container_name: mo.vault.base
 
-  spki:
-    build: 
-      context: spki/
+  # spki:
+  #   build: 
+  #     context: spki/
 
-    image: mo-vault:spki
-
-    volumes:
-      - ${PWD}/local/spki:/spki
+  #   image: mo-vault:spki
+  #   container_name: mo.vault.spki
+  #   volumes:
+  #     - ${PWD}/spki:/root
+  #     - ${PWD}/local/spki:/spki
       
   # encryption as a service
   eaas:
@@ -27,6 +29,8 @@ services:
         MY_TOKENLABEL: ${MY_TOKENLABEL}
         MY_PKCS11_PROXY_PORT: ${MY_PKCS11_PROXY_PORT}
     image: mo-vault:eaas
+    container_name: mo.vault.eaas
+
     ports:
       - "${MY_PKCS11_PROXY_PORT}:${MY_PKCS11_PROXY_PORT}"
       - "8443:8443"
@@ -46,6 +50,7 @@ services:
     depends_on: 
       - eaas
     build: 
+
       context: dropzone/
       args:
         DROPZONE_PORT: ${DROPZONE_PORT}
@@ -53,10 +58,13 @@ services:
         DROPZONE_SECRET_VERSION: ${DROPZONE_SECRET_VERSION}
       
     image: mo-vault:dropzone
+    container_name: mo.vault.dropzone
     ports: 
       - "${DROPZONE_PORT}:${DROPZONE_PORT}"
+    links:
+      - "eaas:mo.vault.eaas"
 
     volumes:
       - ${PWD}/dropzone:/dropzone
-      - ${PWD}/local/keks:/dropzone/keks
-      - $PWD/local/remote:/dropzone/remote
+      - ${PWD}/local/dropzone/keks:/dropzone/keks
+      - $PWD/local/dropzone/remote:/dropzone/remote

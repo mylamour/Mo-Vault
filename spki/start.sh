@@ -51,3 +51,6 @@ cat /spki/ca/intermediate/certs/issue.ca.cert.pem /spki/ca/certs/root.ca.cert.pe
 if [ -f /spki/ca/spki.cert.pem ]; then
     openssl x509 -in /spki/ca/spki.cert.pem -noout -text
 fi
+
+mkdir -p /spki/softhsm/
+cp -r /var/lib/softhsm/tokens/ /spki/softhsm/

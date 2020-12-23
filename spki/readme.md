@@ -1,15 +1,2 @@
-
-```bash
-openssl x509 -req -engine pkcs11 -in tests/csr.pem -CAkeyform engine -CAkey 696976398:02 -CA certs/spki.cert.pem  -days 365 -sha256 -out newcerts/localhost.cert.pem 
-```
-
-also you can configure `PIN=pass` in openssl config file
-
-docs: https://github.com/mylamour/blog/issues/80
-
-
-
-```bash
-pip3 install urwid
-pip3 install blessed
-```
+Just run
+`docker build . -t spki:test && docker run --rm  -v $PWD/local/spki:/spki/ca/  -it spki:test`

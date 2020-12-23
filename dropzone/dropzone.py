@@ -189,7 +189,7 @@ def main():
     handler.passive_ports = range(60000, 65535)
 
     handler.abstracted_fs = UnixFilesystem
-    server = MultiprocessFTPServer(('', 2121), handler)
+    server = MultiprocessFTPServer(('', int(FTP_PROT)), handler)
     server.serve_forever()
 
 
