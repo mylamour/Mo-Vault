@@ -6,15 +6,12 @@ services:
     image: mo-vault:base
 
   spki:
-    depends_on: 
-      - base
     build: 
       context: spki/
 
     image: mo-vault:spki
 
     volumes:
-      - ${PWD}/dropzone:/dropzone
       - ${PWD}/local/spki:/spki
       
   # encryption as a service

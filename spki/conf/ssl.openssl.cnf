@@ -122,6 +122,7 @@ emailAddress		= optional
 ####################################################################
 [ req ]
 default_bits		= 2048
+prompt = no
 default_keyfile 	= privkey.pem
 distinguished_name	= req_distinguished_name
 attributes		= req_attributes
