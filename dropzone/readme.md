@@ -1,5 +1,4 @@
-![dropzone](https://user-images.githubusercontent.com/12653147/101760437-d0e5b880-3b15-11eb-9101-af7bfc5f6b03.gif)
-
+[![asciicast](https://asciinema.org/a/Jdcp0CA2DOesLr2pC3K6zlwtX.svg)](https://asciinema.org/a/Jdcp0CA2DOesLr2pC3K6zlwtX)
 
 * use lftp  with ssl 
 

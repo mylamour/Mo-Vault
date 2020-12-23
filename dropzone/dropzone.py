@@ -72,8 +72,8 @@ class Dropzone(TLS_FTPHandler):
         pass
 
     def on_login(self, username):
-        self.kek_path = "keks/.{}.secret".format(hashlib.sha224(username.encode('utf-8')).hexdigest())
-        self.home_dir = "remote/{}".format(username)
+        self.kek_path = "/dropzone/keks/.{}.secret".format(hashlib.sha224(username.encode('utf-8')).hexdigest())
+        self.home_dir = "/home/{}".format(username)
 
         if not os.path.isdir(self.home_dir):
             os.mkdir(self.home_dir)
@@ -160,24 +160,14 @@ def main():
 
     load_plugins()
     # need a ldap authorizer
-    # authorizer = UnixAuthorizer(rejected_users=["root"],
-    #                             require_valid_shell=True)
-    authorizer = DummyAuthorizer()
+    authorizer = UnixAuthorizer(rejected_users=["root"],
+                                require_valid_shell=False)
     handler = Dropzone
-
-    # Define a new user having full r/w permissions and a read-only
-    # anonymous user
-    # os.getcwd()
-    username = 's'
-    password = 's'
-
-    home_dir = "remote/s"
-    
-    authorizer.add_user(username, password, home_dir, perm='elradfmwMT')
-    # authorizer.add_anonymous()
 
     handler.authorizer = authorizer
     handler.certfile = CERTFILE
+    handler.authorizer = authorizer
+    handler.abstracted_fs = UnixFilesystem
 
     if TLS:
         handler.tls_control_required = True
@@ -187,8 +177,6 @@ def main():
     handler.banner = "Share your data with dropzone."
 
     handler.passive_ports = range(60000, 65535)
-
-    handler.abstracted_fs = UnixFilesystem
     server = MultiprocessFTPServer(('', int(FTP_PROT)), handler)
     server.serve_forever()
 
