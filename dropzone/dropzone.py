@@ -88,9 +88,10 @@ class Dropzone(TLS_FTPHandler):
                         self.decrypt_file(os.path.join(path, name))
                         os.remove(os.path.join(path, name))
 
-    def on_logout(self, username):
         self.key = get_random_bytes(32)
-        flag = True
+        
+
+    def on_logout(self, username):
 
         for path, _, files in os.walk(self.home_dir):
             for name in files:
@@ -98,10 +99,9 @@ class Dropzone(TLS_FTPHandler):
                     self.encrypt_file(os.path.join(path, name))
                     os.remove(os.path.join(path, name))
 
-        if flag:
-            # byter-> to string
-            with open(self.kek_path, 'w') as f:
-                f.write(key_encrypt(self.key.hex()))
+
+        with open(self.kek_path, 'w') as f:
+            f.write(key_encrypt(self.key.hex()))
 
 
     def on_file_sent(self, file):
