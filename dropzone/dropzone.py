@@ -41,22 +41,6 @@ def load_plugins():
                         SECPLUGINS.append(module)
 
 
-def key_decrypt(ciphertext):
-    data = {"secret_path": SECRET_PATH, "secret_version": SECRET_VERSION, "ciphertext": ciphertext}
-
-    response = requests.post('{}/key/decrypt/rsa'.format(EAAS_URL), json=data)
-
-    return json.loads(response.text)['plaintext']
-
-def key_encrypt(plaintext):
-    data = {"secret_path": "{}".format(
-        SECRET_PATH), "secret_version": SECRET_VERSION, "plaintext":plaintext}
-
-    response = requests.post('{}/key/encrypt/rsa'.format(EAAS_URL), json=data)
-    
-    return json.loads(response.text)['ciphertext']
-
-
 class Dropzone(TLS_FTPHandler):
 
 
@@ -79,7 +63,7 @@ class Dropzone(TLS_FTPHandler):
             os.mkdir(self.home_dir)
 
         if os.path.exists(self.kek_path):
-            self.key = bytes.fromhex(key_decrypt(open(self.kek_path,'r').read()))
+            self.key = bytes.fromhex(self.key_decrypt(open(self.kek_path,'r').read()))
             os.remove(self.kek_path)
         
             for path, _, files in os.walk(self.home_dir):
@@ -101,7 +85,7 @@ class Dropzone(TLS_FTPHandler):
 
 
         with open(self.kek_path, 'w') as f:
-            f.write(key_encrypt(self.key.hex()))
+            f.write(self.key_encrypt(self.key.hex()))
 
 
     def on_file_sent(self, file):
@@ -155,6 +139,21 @@ class Dropzone(TLS_FTPHandler):
         with open(file_name[:-4], 'wb') as fo:
             fo.write(dec)
 
+
+    def key_decrypt(self, ciphertext):
+        data = {"secret_path": SECRET_PATH, "secret_version": SECRET_VERSION, "ciphertext": ciphertext}
+
+        response = requests.post('{}/key/decrypt/rsa'.format(EAAS_URL), json=data)
+
+        return json.loads(response.text)['plaintext']
+
+    def key_encrypt(self, plaintext):
+        data = {"secret_path": "{}".format(
+            SECRET_PATH), "secret_version": SECRET_VERSION, "plaintext":plaintext}
+
+        response = requests.post('{}/key/encrypt/rsa'.format(EAAS_URL), json=data)
+        
+        return json.loads(response.text)['ciphertext']
 
 def main():
 
