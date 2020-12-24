@@ -1,6 +1,7 @@
-FROM mo-vault:base
+FROM python:3.8
 LABEL maintainer "Mour <mylamour@163.com>"
-
+# for prod it's better to use python:3.8
+# dor debug it's better to use mo-vault:base
 
 ARG DROPZONE_PORT
 ARG DROPZONE_SECRET_PATH
